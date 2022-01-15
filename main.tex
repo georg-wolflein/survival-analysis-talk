@@ -1,0 +1,170 @@
+\documentclass{beamer}
+
+\usepackage[skins,theorems]{tcolorbox}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{tikz}
+
+
+\title[Survival analysis]{An introduction to survival analysis}
+\author{Georg W\"olflein}
+\institute[www.st-andrews.ac.uk]{School of Computer Science, University of St Andrews}
+\titlegraphic{\includegraphics[width=0.1\paperwidth]{./figs/crest.pdf}}
+
+
+\usetheme{Berlin}
+
+\usetikzlibrary{decorations.pathreplacing,calc}
+\newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
+
+\newcommand{\prob}[1]{\ensuremath{\Pr{\left(#1\right)}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\definecolor{stablue}{HTML}{0052cc}
+% \definecolor{stared}{HTML}{ff4d4d}
+\definecolor{stared}{HTML}{e60d1b}
+\newcommand{\empha}[1]{\textbf{\textcolor{stablue}{#1}}}
+\setbeamercolor{frametitle}{fg=stablue,bg=white}
+\setbeamercolor{title}{fg=stablue,bg=white}
+\setbeamercolor{local structure}{fg=stablue}
+\setbeamercolor{section in toc}{fg=stablue,bg=white}
+\setbeamercolor{subsection in toc}{fg=stared,bg=white}
+\setbeamercolor{item projected}{fg=stablue,bg=white}
+\setbeamertemplate{itemize item}{\color{stablue}$\bullet$}
+\setbeamertemplate{itemize subitem}{\color{stablue}\scriptsize{$\bullet$}}
+\setbeamercolor{block title}{bg=stared!90,fg=white}
+
+\setbeamercolor{section in head/foot}{bg=stablue,fg=white}
+\setbeamercolor{subsection in head/foot}{bg=white,fg=black}
+
+\setbeamercolor{footercl}{fg=white,bg=stablue}
+\setbeamerfont{stafont}{size = \large}
+\setbeamerfont{footerfont}{size = \tiny}
+\setbeamertemplate{footline}
+{
+  \leavevmode%
+  \hbox{%
+  \fontsize{13}{13}\fontfamily{ppl}\selectfont
+  \begin{beamercolorbox}[wd=.5\paperwidth,ht=2.25ex,dp=1ex,left]{footercl}%
+    \usebeamerfont{author in head/foot}\hspace*{1ex}\insertshortinstitute
+   \end{beamercolorbox}%
+   \begin{beamercolorbox}[wd=.25\paperwidth,ht=2.25ex,dp=1ex,right]{footercl}%
+    \parbox{.25\paperwidth}{\fontfamily{cmss}\selectfont{\hfill\hfill \usebeamerfont{footerfont}\insertshorttitle~\insertframenumber{}}}
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.25\paperwidth,ht=2.25ex,dp=1ex,left]{footercl}%
+    \parbox{.25\paperwidth}{\hfill\includegraphics[height=1cm]{./figs/stalogo.png}}% original: 2ex
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+\makeatother
+
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{Contents}
+    \tableofcontents
+\end{frame}
+
+\section{Time-to-event data}
+
+\begin{frame}{What is time-to-event (TTE) data?}
+    We can measure \textbf{time} in:
+    \begin{itemize}
+        \item years
+        \item months
+        \item seconds
+    \end{itemize}
+    \pause
+    The \textbf{event} could be:
+    \begin{itemize}
+        \item death from disease \tikzmark{topbrace}
+        \item product failure
+        \item losing a customer \tikzmark{bottombrace}
+    \end{itemize}
+    \pause
+    \begin{tikzpicture}[overlay, remember picture]
+    \draw [decoration={brace,amplitude=0.5em},decorate,black]
+        let \p1=(topbrace), \p2=(bottombrace) in
+        ({max(\x1,\x2)}, {\y1+0.8em}) -- node[right=0.6em] {must be a binary variable} ({max(\x1,\x2)}, {\y2});
+    \end{tikzpicture}
+    \pause
+    TTE data consists of $(time, \overbrace{event}^{\text{yes/no}})$ tuples.
+\end{frame}
+
+\begin{frame}{Time-to-event (TTE) data}
+    TTE analysis is also known as:
+    \begin{itemize}
+        \item survival analysis
+        \item failure time analysis
+        \item reliability theory (engineering)
+        \item duration modelling (economics)
+        \item event history analysis (sociology)
+    \end{itemize}
+    \pause
+    Use cases for TTE analysis:
+    \begin{itemize}
+        \item TODO
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Example: Covid-19 treatment trial}
+    \only<+>{
+        A randomised controlled trial ($n=4$) was conducted to assess the efficacy of drug ABC in treating Covid-19.
+        This is what happened to the patients:\bigskip
+    }
+    \begin{tabular}{c|c|cl}
+        patient & received ABC? & outcome \\
+        \hline
+        1 & yes & died from Covid-19 on day 14 \\
+        2 & no & dropped out of the study after day 3 \\
+        3 & yes & died by a lightning stroke on day 5 \\
+        4 & no & survived the study (90 days) \\
+    \end{tabular}\bigskip
+    \only<2->{
+    The \textbf{time} is the number of days since testing positive for Covid-19.
+
+    The \textbf{event} is whether the patient died due to Covid-19.
+    }
+    \pause
+    \begin{block}{Time-to-event data}
+        \centering
+        \begin{tabular}{c|c|c}
+            patient & time & event \\
+            \hline
+            1 & 14 & yes \\
+            2 & \only<3>{?}\only<4>{$[0,3]$} & \only<3>{?}\only<4>{no} \\
+            3 & \only<3>{?}\only<4>{$[0,5)$} & \only<3>{?}\only<4>{no} \\
+            4 & \only<3>{?}\only<4>{$[0,30]$} & no \\
+        \end{tabular}
+    \end{block}
+    
+
+\end{frame}
+
+\begin{frame}{Censoring}
+    We just saw an example of \textbf{right-censored} data.
+
+\end{frame}
+
+\begin{frame}{}
+    \begin{block}{Survival function}
+        $$S(t) = \prob{T > t}$$
+    \end{block}
+    Supposing an individual survived until time $t$, the \textbf{hazard function} expresses the probability of surviving an additional time $dt$.
+    \begin{block}{Hazard function}
+        $$
+            \lambda(t)
+            = \lim_{dt\to 0}
+            \frac{\prob{t \leq T \leq dt | T \geq t}}{dt}
+            = \lim_{dt\to 0}
+            \frac{\prob{t \leq T \leq dt}}{dt \cdot S(t)}
+        $$
+    \end{block}
+\end{frame}
+
+\end{document}
