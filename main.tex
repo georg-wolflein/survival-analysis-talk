@@ -14,7 +14,7 @@
 
 \usetheme{Berlin}
 
-\usetikzlibrary{decorations.pathreplacing,calc}
+\usetikzlibrary{decorations.pathreplacing,calc,positioning}
 \newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
 
 \newcommand{\prob}[1]{\ensuremath{\Pr{\left(#1\right)}}}
@@ -318,51 +318,56 @@
     \begin{tabular}{c|c|cl}
         patient & received ABC? & outcome \\
         \hline
-        1 & yes & died from Covid-19 on day 14 \\
+        1 & yes & died from Covid-19 on day 15 \\
         2 & no & dropped out of the study after day 3 \\
         3 & yes & died by a lightning stroke on day 5 \\
-        4 & no & survived the study (90 days) \\
+        4 & no & survived the study (30 days) \\
     \end{tabular}
 \end{frame}
 \begin{frame}{Example: Covid-19 treatment trial}
-    \begin{tabular}{c|c|cl}
-        patient & received ABC? & outcome \\
-        \hline
-        1 & yes & died from Covid-19 on day 14 \\
-        2 & no & dropped out of the study after day 3 \\
-        3 & yes & died by a lightning stroke on day 5 \\
-        4 & no & survived the study (90 days) \\
-    \end{tabular}
-    \uncover<2->{
-        The \textbf{time} is the number of days since testing positive for Covid-19.
+    \begin{tikzpicture}
+        \node[above] (start) at (0,-0.25) {study start};
+        \node[above] (end) at (6,-0.25) {study end};
+        \draw (start) -- (start |- ,-2.25);
+        \draw (end) -- (end |- ,-2.25);
+        \draw (start |- ,-.5) node[left] {patient 1} -- (3,-.5)   node[right,circle,inner sep=1.5pt,fill=black] {} node[right=1.5pt] {\footnotesize 15 days};
+        \draw (start |- ,-1) node[left] {patient 2} -- (.6,-1)    node[right,circle,inner sep=1.5pt,draw=black] {} node[right=1.5pt] {\footnotesize 3 days};
+        \draw (start |- ,-1.5) node[left] {patient 3} -- (1,-1.5) node[right,circle,inner sep=1.5pt,draw=black] {} node[right=1.5pt] {\footnotesize 5 days};
+        \draw (start |- ,-2) node[left] {patient 4} -- (6,-2)                                                      node[above left=-2pt and -2pt]  {\footnotesize 30 days};
+        \node[right] at (end |- ,-.5) {died from Covid-19};
+        \node[right] at (end |- ,-1) {dropped out};
+        \node[right] at (end |- ,-1.5) {died from lightning};
+        \node[right] at (end |- ,-2) {survived the study};
+    \end{tikzpicture}
+    \pause
+    The \textbf{time} is the number of days since testing positive for Covid-19.
 
-        The \textbf{event} is whether the patient died due to Covid-19.
-        \pause
+    The \textbf{event} is whether the patient died due to Covid-19.
+    \pause
 
-        \begin{exampleblock}{Time-to-event data}
-            \centering
-            \begin{tabular}{c|c|c}
-                patient & time & event \\
-                \hline
-                1 & 14 & yes \\
-                2 & \only<3>{?}\only<4>{$[0,3]$} & \only<3>{?}\only<4>{no} \\
-                3 & \only<3>{?}\only<4>{$[0,5)$} & \only<3>{?}\only<4>{no} \\
-                4 & \only<3>{?}\only<4>{$[0,30]$} & no \\
-            \end{tabular}
-        \end{exampleblock}
-    }
+    \begin{exampleblock}{Time-to-event data}
+        \centering
+        \begin{tabular}{c|c|c}
+            patient & time & event \\
+            \hline
+            1 & 15 & yes \\
+            2 & \only<3>{?}\only<4>{$[0,3]$} & \only<3>{?}\only<4>{no} \\
+            3 & \only<3>{?}\only<4>{$[0,5)$} & \only<3>{?}\only<4>{no} \\
+            4 & \only<3>{?}\only<4>{$[0,30]$} & no \\
+        \end{tabular}
+    \end{exampleblock}
 \end{frame}
 
 \begin{frame}{Censoring}
     We just saw an example of \textbf{right-censored} data.
-
+    
 \end{frame}
 
 \section{Survival and hazard functions}
 \begin{frame}{Survival function}
-    Let $T$ be a continuous random variable representing time.
+    Let $T$ be a continuous random variable representing survival time.
 
-    The \textbf{survival function} $S(t)$ is the probability that an individual will survive for a time greater than $t$.
+    The \textbf{survival function} $S(t)$ is the probability that an individual will survive until at least time $t$.
     \pause
     \begin{block}{Survival function}
         $$S(t) = \prob{T > t}$$
@@ -390,7 +395,12 @@
     \end{block}
 \end{frame}
 
+
+
 \section[AFT model]{Accelerated failure time (AFT) model}
-\section{Proportional hazards model}
+\section[PH model]{Proportional hazards (PH) model}
+
+% \section{Comparing survival distributions}
+% Logrank
 
 \end{document}
