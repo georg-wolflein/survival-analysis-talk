@@ -311,7 +311,9 @@
     \pause
     Use cases for TTE analysis:
     \begin{itemize}
-        \item TODO
+        \item clinical research
+        \item customer analytics (churn)
+        \item hardware (equipment failure)
     \end{itemize}
 \end{frame}
 
@@ -356,18 +358,26 @@
             patient & time & event \\
             \hline
             1 & 15 & yes \\
-            2 & \only<3>{?}\only<4>{$[0,3]$} & \only<3>{?}\only<4>{no} \\
-            3 & \only<3>{?}\only<4>{$[0,5)$} & \only<3>{?}\only<4>{no} \\
-            4 & \only<3>{?}\only<4>{$[0,30]$} & no \\
+            2 & \only<3|handout:0>{?}\only<4>{$[0,3]$} & \only<3|handout:0>{?}\only<4>{no} \\
+            3 & \only<3|handout:0>{?}\only<4>{$[0,5)$} & \only<3|handout:0>{?}\only<4>{no} \\
+            4 & \only<3|handout:0>{?}\only<4>{$[0,30]$} & no \\
         \end{tabular}
     \end{exampleblock}
 \end{frame}
 
 \begin{frame}{Censoring}
-    We just saw examples of \textbf{right-censored} data.
-    
-    TODO
+    \textbf{Censoring} occurs when we have some information about an individual's survival time, but don't know the exact time.
+    Possible reasons include
+    \begin{itemize}
+        \item not experiencing the event before the study concludes;
+        \item getting lost to follow-up during the study period;
+        \item withdrawing from the study.
+    \end{itemize}
+
+    \pause
+    We just saw examples of \emph{right-censored} data.
 \end{frame}
+\note{Left censoring happens if the individual observed the event before the start of the study. This is often very hard to deal with and therefore not included in the study.}
 
 \section{Survival function}
 \begin{frame}{Survival function}
@@ -392,6 +402,7 @@
     \end{tikzpicture}
 \end{frame}
 
+\section{Kaplan-Meier estimator}
 \begin{frame}{Modelling the survival function}
     The \textbf{Kaplan-Meier estimator} provides a non-parametric estimate of the survival function $S(t)$ using the survival curve.
     \pause
@@ -428,21 +439,21 @@
 \section{Hazard function}
 \begin{frame}{Hazard function}
     The \textbf{hazard function} expresses the
-    \emph{\highlight<7>{instantaneous rate} of occurence} of the event.
+    \emph{\highlight<7|handout:0>{instantaneous rate} of occurence} of the event.
     \pause
 
-    \highlight<5>{Supposing an individual survived until time $t$},
-    it expresses the \highlight<4>{probability of dying within a short additional time $dt$},
-    \highlight<6>{per unit time}.
+    \highlight<5|handout:0>{Supposing an individual survived until time $t$},
+    it expresses the \highlight<4|handout:0>{probability of dying within a short additional time $dt$},
+    \highlight<6|handout:0>{per unit time}.
     \pause
     \begin{block}{Hazard function}
         \begin{align*}
             \lambda(t)
-            &= \hidelight<7>{\lim_{dt\to 0}}
-                \frac{\prob{\hidelight<4>{t \leq T \leq t+dt} | \hidelight<5>{\highlight<8>{T \geq t}}}}{\hidelight<6>{dt}}\\
+            &= \hidelight<7|handout:0>{\lim_{dt\to 0}}
+                \frac{\prob{\hidelight<4|handout:0>{t \leq T \leq t+dt} | \hidelight<5|handout:0>{\highlight<8|handout:0>{T \geq t}}}}{\hidelight<6|handout:0>{dt}}\\
             \uncover<8->{
             &= \lim_{dt\to 0}
-                \frac{\prob{t \leq T \leq t+dt}}{dt \cdot \only<8>{\highlight{\prob{T \geq t}}}\only<9->{\highlight<9>{S(t)}}}
+                \frac{\prob{t \leq T \leq t+dt}}{dt \cdot \only<8|handout:0>{\highlight{\prob{T \geq t}}}\only<9->{\highlight<9|handout:0>{S(t)}}}
             }
         \end{align*}
     \end{block}
@@ -527,11 +538,26 @@
     We can estimate the parameters $\boldsymbol{\beta}$ by minimizing the negative partial log-likelihood, i.e.\ $-\log L(\boldsymbol\beta)$, by taking the partial derivatives with respect to the parameters $\boldsymbol{\beta}$ and solving for the minimum using e.g.\ the Newton-Raphson algorithm.
 \end{frame}
 \begin{frame}{Hazard ratios}
-    The fraction used to express the proportional hazards assumption is actually the \textbf{hazard ratio} of individuals $i$ and $j$.
+    The fraction used to express the proportional hazards assumption is actually the \textbf{hazard ratio}, measuring the risk of individual $i$ relative to individual $j$:
     \begin{equation*}
         HR =
             \frac{\lambda(t|\mathbf{X}_i)}{\lambda(t|\mathbf{X}_j)} = \exp\left(\boldsymbol{\beta}(\mathbf{X}_i - \mathbf{X}_j)\right).
     \end{equation*}
+
+    \pause
+    We may be interested in the relative risk associated with a particular covariate $c$, specifically the risk of said covariate having value $c_i$ compared to $c_j$.
+    Consider two dummy individuals $i$ and $j$ differing only in the $c$\textsuperscript{th} covariate, i.e.\ $\mathbf{X}_{i,k} = \mathbf{X}_{j,k}$ for $k \neq c$.
+    Then the relative risk associated with $c_i$ compared to $c_j$ is
+    \begin{equation*}
+        HR = \exp\left({\boldsymbol\beta}_c (c_i - c_j)\right).
+    \end{equation*}
+\end{frame}
+\begin{frame}{Interpretation of hazard ratios}
+    \begin{itemize}
+        \item $HR=1$: no effect
+        \item $HR>1$: increase in hazard
+        \item $HR<1$: reduction in hazard
+    \end{itemize}
 \end{frame}
 
 
