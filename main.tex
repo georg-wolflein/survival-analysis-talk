@@ -4,7 +4,13 @@
 \usepackage{amsmath}
 \usepackage{xcolor}
 \usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
 
+% \usepackage[style=authoryear,backend=biber]{biblatex}
+% \addbibresource{bibliography.bib}
+
+\setbeameroption{show notes}
 
 \title[Survival analysis]{An introduction to survival analysis}
 \author{Georg W\"olflein}
@@ -15,6 +21,8 @@
 \usetheme{Berlin}
 
 \usetikzlibrary{decorations.pathreplacing,calc,positioning}
+\pgfplotsset{compat=1.18}
+
 \newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
 
 \newcommand{\prob}[1]{\ensuremath{\Pr{\left(#1\right)}}}
@@ -359,20 +367,68 @@
 \end{frame}
 
 \begin{frame}{Censoring}
-    We just saw an example of \textbf{right-censored} data.
+    We just saw examples of \textbf{right-censored} data.
     
+    TODO
 \end{frame}
 
-\section{Survival and hazard functions}
+\section{Survival function}
 \begin{frame}{Survival function}
     Let $T$ be a continuous random variable representing survival time.
 
-    The \textbf{survival function} $S(t)$ is the probability that an individual will survive until at least time $t$.
+    The \textbf{survival function} $S(t)$ is the probability that an individual will survive past time $t$. 
+    % i.e. survive until at least $t$.
     \pause
     \begin{block}{Survival function}
         $$S(t) = \prob{T > t}$$
     \end{block}
 \end{frame}
+
+\begin{frame}{Survival curve}
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[xmin=0, ymin=0,xlabel=$t$ (time),ylabel=survival]
+            \addplot [no markers, const plot, red] table [x=time,y=survival,col sep=comma] {surv_data1.csv};
+            \legend{$S(t)$}
+            \addplot [only marks, mark=+] table [x=time,y expr={(\thisrow{event}==0 ? \thisrow{survival} : inf )},col sep=comma] {surv_data1.csv};
+        \end{axis}
+    \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Modelling the survival function}
+    The \textbf{Kaplan-Meier estimator} provides a non-parametric estimate of the survival function $S(t)$ using the survival curve.
+    \pause
+    \begin{block}{Kaplan-Meier estimator}
+        \begin{align*}
+            \hat{S}(t) = \prod_{i:t_i \leq t} \left( 1 - \frac{d_i}{n_i} \right)
+        \end{align*}
+        where
+        \begin{itemize}
+            \item $t_i$ is an event time
+            \item $d_i$ is the number of deaths at time $t_i$
+            \item $n_i$ is the number of individuals \emph{known to have survived} until $t_i$
+        \end{itemize}
+    \end{block}
+\end{frame}
+\begin{frame}{Survival curve and Kaplan-Meier estimator}
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[xmin=0, ymin=0,xlabel=$t$ (time),ylabel=survival]
+            \addplot [no markers, const plot, red] table [x=time,y=survival,col sep=comma] {surv_data1.csv};
+            \addplot [no markers, const plot, blue] table [x=time,y=km,col sep=comma] {surv_data1.csv};
+            \legend{$S(t)$,$\hat{S}(t)$}
+            \addplot [only marks, mark=+] table [x=time,y expr={(\thisrow{event}==0 ? \thisrow{survival} : inf )},col sep=comma] {surv_data1.csv};
+            \addplot [only marks, mark=+] table [x=time,y expr={(\thisrow{event}==0 ? \thisrow{km} : inf )},col sep=comma] {surv_data1.csv};
+        \end{axis}
+    \end{tikzpicture}
+\end{frame}
+\note[itemize]{
+    \item When there is no censoring, $S(t)=\hat{S}(t)$.
+    \item Commonly used to compare two study populations.
+    \item Does not control for covariates.
+}
+
+\section{Hazard function}
 \begin{frame}{Hazard function}
     The \textbf{hazard function} expresses the
     \emph{\highlight<7>{instantaneous rate} of occurence} of the event.
@@ -395,10 +451,9 @@
     \end{block}
 \end{frame}
 
-
-
-\section[AFT model]{Accelerated failure time (AFT) model}
-\section[PH model]{Proportional hazards (PH) model}
+\begin{frame}{Cox proportional hazards model}
+    
+\end{frame}
 
 % \section{Comparing survival distributions}
 % Logrank
