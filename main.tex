@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 
 \usepackage[skins,theorems]{tcolorbox}
 \usepackage{amsmath}
@@ -6,9 +6,6 @@
 \usepackage{tikz}
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
-
-% \usepackage[style=authoryear,backend=biber]{biblatex}
-% \addbibresource{bibliography.bib}
 
 \setbeameroption{show notes}
 
@@ -451,11 +448,101 @@
     \end{block}
 \end{frame}
 
-\begin{frame}{Cox proportional hazards model}
-    
+\section[Cox model]{Cox's proportional hazards model}
+\begin{frame}{What does survival depend on?}
+    Recall the survival function $S(t)=\prob{T>t}$ as the probability that an individual will survive past time $t$.
+    \pause
+    Let's assume that $S(t)$ depends on
+    \begin{enumerate}
+        \item the \textbf{baseline hazard function} (how risk of event occurence changes over time at baseline covariates); and
+        \item the \textbf{effect parameters} (how hazard varies due to the covariates), also known as the \emph{partial hazard}.
+    \end{enumerate}
 \end{frame}
+\begin{frame}{Cox's proportional hazards model}
+    Cox's proportional hazards model uses both factors to provide a semi-parametric estimate of the hazard function $\lambda(t)$ conditioned on the covariates $\mathbf{x}$.
+    
+    \begin{block}{Cox's proportional hazards model}
+        \begin{align*}
+            \lambda(t | \mathbf{x}) = \overbrace{\lambda_0(t)}^{\substack{\text{baseline}\\\text{hazard}}} \overbrace{\exp \left( \sum_{i=1}^n \beta_i \mathbf{x}_i \right)}^{\text{partial hazard}}
+        \end{align*}
+    \end{block}
+\end{frame}
+\note[itemize]{
+    \item $\lambda_0(t)$ is a population-level baseline hazard that changes over time (for a reference individual with zeroed covariates).
+    \item The partial hazard is a linear function of the covariates that is exponentiated. Each coefficient $\beta_i$ is the relative risk associated with covariate $\mathbf{x}_i$.
+}
+\begin{frame}{Proportional hazards assumption}
+    The model assumes fixed \textbf{proportional hazards}, i.e.\ the hazard for an individual $i$ in proportion to the hazard of any other individual $j$ is fixed over time.
+    \pause
+    That is,
+    \begin{equation*}
+        \frac{\lambda_i(t|\mathbf{X}_i)}{\lambda_j(t|\mathbf{X}_j)} = \exp\left(\boldsymbol{\beta}(\mathbf{X}_i - \mathbf{X}_j)\right).
+    \end{equation*}
+    \pause
+    Therefore,
+    \begin{itemize}
+        \item the baseline hazard $\lambda_0(t)$ is independent of the covariates, and
+        \item the partial hazard is time-independent.
+    \end{itemize}
+\end{frame}
+\note{The so-called \textbf{extended Cox model} allows the partial hazard to vary with time, and therefore no longer satisfies the proportional hazards assumption.}
+
+\begin{frame}{Partial likelihood}
+    For each individual $i$, let
+    \begin{itemize}
+        \item $T_i$ be a possibly censored survival time random variable, and
+        \item $\mathbf{X}_i$ denote the covariates.
+    \end{itemize}
+    Further, let the \textbf{risk set} $\mathcal{R}(t)=\{i : T_i \geq t\}$ be the set of individuals that are ``at risk'' at time $t$.
+
+    \pause
+    Cox proposed a \textbf{partial likelihood} for $\boldsymbol{\beta}$ without involving $\lambda_0(t)$. 
+    Maximising this function allows us to estimate the parameters $\boldsymbol{\beta}$.
+
+    \pause
+    \begin{align*}
+        L(\boldsymbol{\beta})
+            &= \prod_{j=1}^N \prob{\text{individual $j$ dies} \ | \ \text{one death from $\mathcal{R}(T_j)$}}    \end{align*}
+\end{frame}
+\note[itemize]{
+    \item $L_j(\boldsymbol\beta)$ is a \emph{partial} likelihood because it considers only patients who died, not those that are censored.
+}
+\begin{frame}{Partial likelihood formula}
+    \begin{align*}
+        L(\boldsymbol{\beta})
+            &= \prod_{j=1}^N \prob{\text{individual $j$ dies} \ | \ \text{one death from $\mathcal{R}(T_j)$}} \\
+            &= \dots \\
+            &= \prod_{j=1}^N \frac
+                {\lambda(T_j | \mathbf{X}_j)}
+                {\sum_{k \in \mathcal{R}(T_j)} \lambda(T_j | \mathbf{X}_k)} \\
+            &= \prod_{j=1}^N \frac
+                {\lambda_0(T_j) \exp\left(\boldsymbol\beta \mathbf{X}_j\right)}
+                {\sum_{k \in \mathcal{R}(T_j)} \lambda_0(T_j) \exp\left(\boldsymbol\beta \mathbf{X}_k\right)} \\
+            &= \prod_{j=1}^N \frac
+                {\exp\left(\boldsymbol\beta \mathbf{X}_j\right)}
+                {\sum_{k \in \mathcal{R}(T_j)} \exp\left(\boldsymbol\beta \mathbf{X}_k\right)}
+    \end{align*}
+\end{frame}
+\begin{frame}{Parameter estimation}
+    We can estimate the parameters $\boldsymbol{\beta}$ by minimizing the negative partial log-likelihood, i.e.\ $-\log L(\boldsymbol\beta)$, by taking the partial derivatives with respect to the parameters $\boldsymbol{\beta}$ and solving for the minimum using e.g.\ the Newton-Raphson algorithm.
+\end{frame}
+\begin{frame}{Hazard ratios}
+    The fraction used to express the proportional hazards assumption is actually the \textbf{hazard ratio} of individuals $i$ and $j$.
+    \begin{equation*}
+        HR =
+            \frac{\lambda(t|\mathbf{X}_i)}{\lambda(t|\mathbf{X}_j)} = \exp\left(\boldsymbol{\beta}(\mathbf{X}_i - \mathbf{X}_j)\right).
+    \end{equation*}
+\end{frame}
+
 
 % \section{Comparing survival distributions}
 % Logrank
+
+% Suppose we want to estimate unknown function, e.g. survival function.
+% Approaches:
+% 􏰀 Non-parametric using Kaplan-Meier. Advantage: no assumption regarding type of distribution. Disadvantage: requires iid observations.
+% 􏰀 Parametric model. Advantage: we only need to estimate a few parameters that completely characterize distribution (e.g. exponential or Weibull) - gives low variance of estimates. Can be extended to non-iid observations using regression on covariates. Disadvantage: assumed model class may be (or always is) incorrect leading to model error or in other words, bias.
+% Possible to combine the best of two approaches ?
+%%% semi-parametric approach: Cox
 
 \end{document}
